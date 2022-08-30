@@ -1,6 +1,8 @@
 # Capstone-Project
 The Australian Women on Labour Force in Covid Times
 
+**Look at the Viz on https://tabsoft.co/3Trvorc**
+
 *Report Document Capstone Project*
 
 The Scenario:
