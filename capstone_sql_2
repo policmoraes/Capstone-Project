@@ -1,3 +1,258 @@
+## Verifying tables 
+
+SELECT *
+FROM public.status_work_nonqual
+
+-- CTE to use in future calculations
+
+WITH jobseeker_cte AS (
+    SELECT 
+        "age_group", 
+        "Gender", 
+        round(cast("recipients" as numeric), 2) as recipients_round
+    FROM jobseeker    
+)
+    SELECT 
+    "age_group", 
+    "Gender",
+    sum("recipients_round") as "recipients_sum"
+    FROM jobseeker_cte
+    GROUP BY "age_group", "Gender";
+---------------------------------------    
+SELECT
+    "age_group",
+    "Gender",
+    round(cast(sum("recipients") as numeric), 2) as recipients_sum
+FROM jobseeker
+GROUP BY "age_group", "Gender"
+--------------------------------------
+SELECT
+    "age_group",
+    "Gender",
+    round(cast(avg("recipients") as numeric), 2) as recipients_sum
+FROM jobseeker
+GROUP BY "age_group", "Gender"
+
+----------------------------
+CREATE VIEW jobseeker_view AS
+WITH jobseeker_cte AS (
+    SELECT 
+        "age_group", 
+        "Gender", 
+        round(cast("recipients" as numeric), 2) as recipients_round
+    FROM jobseeker    
+)
+    SELECT 
+    "age_group", 
+    "Gender",
+    sum("recipients_round") as "recipients_sum"
+    FROM jobseeker_cte
+    GROUP BY "age_group", "Gender";
+
+-------------------------------
+
+CREATE VIEW degree_view AS
+SELECT * 
+FROM public.bachelor_degree_gender_2021;
+--------------------------------
+
+## Agregation by average
+
+SELECT "Date", avg("Males (%)") as Male, avg("Females (%)") as Female
+FROM public.employment_ratio_2012_2022
+GROUP BY "Date"
+ORDER BY "Date" ASC;
+------------------------
+
+
+SELECT "method_setting_pay","variable", sum("value")
+FROM public.weekly_employees_method_pay
+GROUP BY "variable", "method_setting_pay"
+
+SELECT *
+FROM public.weekly_employees_method_pay
+
+-- --------------------------------------------------------------
+## variation of employees over time by occupation and gender
+-- --------------------------------------------------------------
+DROP VIEW variation_of_employees_over_time_by_occupation_and_gender;
+
+CREATE OR REPLACE VIEW public.variation_of_employees_over_time_by_occupation_and_gender
+ AS
+ WITH employees_variation_by_occupation_gender AS (
+         SELECT *,
+            "value" - lag("value") OVER w AS difference
+           FROM occupation_by_year_gender_2
+          WINDOW w AS (PARTITION BY "Employee Type", gender, occupation ORDER BY "Year")
+        )
+ SELECT *,
+    CASE
+        WHEN "Year" BETWEEN '2020-01-01' AND '2022-01-01' THEN true
+        ELSE false
+    END AS is_covid_time
+   FROM employees_variation_by_occupation_gender;
+
+
+-- --------------------------------------------------------------
+
+SELECT gender, is_covid_time, avg(difference) as avg_difference
+  FROM variation_of_employees_over_time_by_occupation_and_gender
+  GROUP BY gender, is_covid_time
+  ORDER BY avg_difference;
+  
+SELECT gender, occupation, is_covid_time, avg(difference) as avg_difference
+  FROM variation_of_employees_over_time_by_occupation_and_gender
+  GROUP BY gender, occupation, is_covid_time
+  ORDER BY is_covid_time asc, avg_difference desc;
+  
+  -----------------------------------
+
+With weekly_fulltime_earning as (
+    SELECT *,
+    "Male" - lag("Male")  OVER gap AS male_gender_gap,
+    "Female" - lag("Female") OVER gap AS female_gender_gap
+    FROM weekly_earning_fulltime_2015_2022
+   WINDOW gap AS(ORDER BY "Date")
+    )
+----------------------------
+WITH weekly_earning AS (
+    SELECT "Date" as date,
+           "Male" as male,
+           "Male" - lag("Male")  OVER gap AS male_diff,
+           "Female" as female,
+           "Female" - lag("Female") OVER gap AS female_diff
+    FROM weekly_earning_fulltime_2015_2022
+        WINDOW gap AS(ORDER BY "Date")
+)
+    SELECT
+       date,
+       round( cast(male_diff/male as numeric), 2) as male_gap,
+       round( cast(female_diff/female as numeric), 2) as female_gap
+    FROM weekly_earning
+    
+-----------------------------
+## Join tables
+
+SELECT "Industry","y
+FROM weekly_earning_industry_2019
+INNER JOIN weekly_earning_industry_2020 on "weekly_earning_industry_2019.Industry" = "weekly_earning_industry_2020.Industry"
+
+
+   
+select "Industry", 
+        "Male",
+        "Female"
+from weekly_earning_industry_2019
+inner join weekly_earning_industry_2020
+    on "weekly_earning_industry_2020.Male" = "weekly_earning_industry_2019.Female"
+ ------
+## Creating View with join tables
+ 
+CREATE OR REPLACE VIEW public.weekly_earning_by_industry
+AS 
+WITH weekly_earning_cte AS ( 
+select industry, a.year,a.male, a.female, b.year, b.male, b.female, c.year, c.male, c.female
+from weekly_earning_industry_2021 a
+left join weekly_earning_industry_2020 b using (industry)
+left join weekly_earning_industry_2021 c using (industry)
+)
+
+-- Calculating the difference on variation of employment by occupation and Gender
+
+CREATE OR REPLACE VIEW public.variation_of_employees_over_time_by_occupation_and_gender
+ AS
+ WITH employees_variation_by_occupation_gender AS (
+         SELECT *,
+            "value" - lag("value") OVER w AS difference
+           FROM occupation_by_year_gender_2
+          WINDOW w AS (PARTITION BY "Employee Type", gender, occupation ORDER BY "Year")
+        )
+ SELECT *,
+
+
+--------
+select * from weekly_earning_industry_2020
+
+CREATE OR REPLACE VIEW public.weekly_earning_by_industry
+AS 
+with
+     weekly_earning_industry_2019_to_2021 as (
+        select "year" as date_time, male, female, industry from weekly_earning_industry_2019
+        union
+        select "year" as date_time, male, female, industry from weekly_earning_industry_2020
+        union
+        select "year" as date_time, male, female, industry from weekly_earning_industry_2020
+    ),
+     weekly_earning_industry_with_diff as (
+        select 
+            date_time, male, female, industry,
+            male - lag(male) over gap as male_diff,
+            female - lag(female) over gap as female_diff
+        from weekly_earning_industry_2019_to_2021
+        window gap as (partition by industry order by datetime)
+     )
+select
+       date_time, industry, male, female,
+       round( cast(male_diff/male as numeric), 2) as male_gap,
+       round( cast(female_diff/female as numeric), 2) as female_gap
+  from weekly_earning_industry_with_diff
+;
+
+-- Creating view with CTE and Union Tables
+
+CREATE OR REPLACE VIEW public.weekly_earning_by_industry
+AS 
+with
+     weekly_earning_industry_2019_to_2021 as (
+        select to_timestamp("year", 'YYYY-MM-DD hh24:mi:ss')::timestamp as datetime, male, female, industry from weekly_earning_industry_2019
+        union
+        select "year" as datetime, male, female, industry from weekly_earning_industry_2020
+        union
+        select "year" as datetime, male, female, industry from weekly_earning_industry_2021
+    ),
+     weekly_earning_industry_with_diff as (
+        select
+            datetime, male, female, industry,
+            male - lag(male) over gap as male_diff,
+            female - lag(female) over gap as female_diff
+        from weekly_earning_industry_2019_to_2021
+        window gap as (partition by industry order by datetime)
+     )
+select
+       datetime, industry, male, female,
+       round( cast(male_diff/male as numeric), 2) as male_gap,
+       round( cast(female_diff/female as numeric), 2) as female_gap
+  from weekly_earning_industry_with_diff
+;
+
+CREATE OR REPLACE VIEW public.weekly_earning_by_industry
+AS 
+with
+     weekly_earning_industry_2019_to_2021 as (
+        select to_timestamp("year", 'YYYY-MM-DD hh24:mi:ss')::timestamp as datetime, male, female, industry from weekly_earning_industry_2019
+        union
+        select "year" as datetime, male, female, industry from weekly_earning_industry_2020
+        union
+        select "year" as datetime, male, female, industry from weekly_earning_industry_2021
+    ),
+     weekly_earning_industry_with_diff as (
+        select
+            datetime, male, female, industry,
+            male - lag(male) over gap as male_diff,
+            female - lag(female) over gap as female_diff
+        from weekly_earning_industry_2019_to_2021
+        window gap as (partition by industry order by datetime)
+     )
+select
+       datetime, industry, male, female,
+       round( cast(male_diff/male as numeric), 2) as male_gap,
+       round( cast(female_diff/female as numeric), 2) as female_gap
+  from weekly_earning_industry_with_diff
+;
+
+---------------------------------
+## Calculating the weekly earning difference by occupation and gender
+
 select *
 from public.variation_of_employees_over_time_by_occupation_and_gender
 
