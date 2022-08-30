@@ -1,0 +1,73 @@
+select *
+from public.variation_of_employees_over_time_by_occupation_and_gender
+
+select gender, avg(difference)
+from public.variation_of_employees_over_time_by_occupation_and_gender
+where difference < 0 and is_covid_time IS TRUE
+group by gender
+
+select *
+from public.weekly_earning_by_industry
+
+select avg(male_gap) as male, avg(female_gap) as female, datetime, industry
+from public.weekly_earning_by_industry
+where male_gap < 0 or female_gap < 0 
+group by datetime, male_gap, female_gap, industry
+order by datetime
+
+with
+    weekly_earning_industry_2019_to_2021 as (
+        select to_timestamp(weekly_earning_industry_2019.year, 'YYYY-MM-DD')::timestamp as datetime, male, female, industry from weekly_earning_industry_2019
+        union
+        select "Year" as datetime, male, female, industry from weekly_earning_industry_2020
+        union
+        select "Year" as datetime, male, female, industry from weekly_earning_industry_2020
+    ),
+    weekly_earning_industry_with_diff as (
+        select
+            datetime, male, female, industry,
+            male - lag(male) over gap as male_diff,
+            lag(male) over gap as male_prev,
+            female - lag(female) over gap as female_diff,
+            lag(female) over gap as female_prev
+        from weekly_earning_industry_2019_to_2021
+            window gap as (partition by industry order by datetime)
+    )
+select
+    datetime, industry, male, female,
+    round( cast(male_diff/male_prev as numeric), 2) as male_gap,
+    round( cast(female_diff/female_prev as numeric), 2) as female_gap
+from weekly_earning_industry_with_diff
+;
+
+with
+    weekly_earning_industry_2019_to_2021 as (
+        select to_timestamp(weekly_earning_industry_2019.year, 'YYYY-MM-DD')::timestamp as datetime, male, female, industry from weekly_earning_industry_2019
+        union
+        select weekly_earning_industry_2020.year as datetime, male, female, industry from weekly_earning_industry_2020
+        union
+        select weekly_earning_industry_2021.year as datetime, male, female, industry from weekly_earning_industry_2021
+    ),
+    weekly_earning_industry_with_diff as (
+        select
+            datetime, male, female, industry,
+            male - lag(male) over gap as male_diff,
+            lag(male) over gap as male_prev,
+            female - lag(female) over gap as female_diff,
+            lag(female) over gap as female_prev
+        from weekly_earning_industry_2019_to_2021
+            window gap as (partition by industry order by datetime)
+    )
+select
+    datetime, industry, male, female,
+    round( cast(male_diff/male_prev as numeric), 2) as male_gap,
+    round( cast(female_diff/female_prev as numeric), 2) as female_gap
+from weekly_earning_industry_with_diff
+;
+
+select avg(weekly_earning_fulltime_2015_2022.Male) as male, avg(weekly_earning_fulltime_2015_2022.Female) as female 
+from public.weekly_earning_fulltime_2015_2022
+group by "Date", weekly_earning_fulltime_2015_2022.Male, weekly_earning_fulltime_2015_2022.Female
+order by "Date"
+
+select * from public.weekly_earning_fulltime_2015_2022
