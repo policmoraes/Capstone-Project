@@ -1,11 +1,13 @@
 # Capstone-Project
 The Australian Women on Labour Force in Covid Times
 
-Report Document Capstone Project
-The Scenario
+*Report Document Capstone Project*
+
+The Scenario:
 The  coronavirus and the pandemic affected the whole society in several ways. Many articles pointed out some groups that would be more affected than others: young people (online classes and delay in entering the job market), the elderly (health) and women, either by the increase in domestic violence, increase in the workload with domestic work and care with dependents, or loss of incoming or employment. Looking at the Labour Force, how has Covid-19 affected the Australian woman?
 
-● Problem, Goals and Audiences
+● Problem, Goals and Audiences:
+
 ○ The impact of the Covid-19 on Australian Women
 ○ To understand the scenario and answer the main question, the goals are finding the resolutions for:
 The Gender Gap was increased during the Covid-19 pandemic? 
@@ -16,11 +18,13 @@ The unemployment rate increased for which group?
 The weekly incoming were affected by Covid? If so, which gender were more affected?
 ○ The criteria success is identify if the gender gap were large during Covid-19 pandemic
 
-● Data Sources and Definitions in a Data Dictionary
+● Data Sources and Definitions in a Data Dictionary:
+
 ○ All the data is from ABS (Australian Bureau of Statistics) and ATO (Australian Taxation Office)
 The following files are cleaning data from Labour Force, Census of Population and Housing, Characteristics of Employment Transitions, Education and Work, Survey of Income and Housing, Gender Indicators, Household Impacts of Covid, Personal Incoming, Work Arrangements, Unpaid Work Survey;
 
 Files:
+
 average_account_superannuation_gender_year_2014_2020.csv
 bachelor_degree_gender_2021.csv
 bacholer_degree_gender_2021.csv
@@ -59,24 +63,26 @@ SQL (manipulated data, calculations and grouping)
 Tableau (connected to SQl database and created dashboard to show the finds)
 
 
-● Patterns, Trends and Insights
-○ Patterns:
-With grouping, calculations and filters on SQL; visualisations on Tableau, some patterns were identified:
+● Patterns, Trends and Insights:
+
+○ With grouping, calculations and filters on SQL; visualisations on Tableau, some patterns were identified:
 Gender Gap: women still have less income, participation on Labour force, spent more time taking care of others and housework, are the majority on part-time jobs and work in industries that pay less.
 in other hand, the difference on employment in average were round 1%
 
 
-● At least one predictive model
-○ Predictive Model:
+● Predictive model:
+
 What is the future of Women in the Labour Force in Australia? Using Forecast in Tableau is possible to expect equality on participation in the Labour Force in 2032.
 
 
-● Recommendations
+● Recommendations:
+
 ○ Gender Gap
 We still have a large group of women working in part-time type of employment, studies pointing the main cause is because women are the primary-care in household arrangements. Even they have higher degree of formal education, they have more interruption in their career to take care of children, illness families or aged care, influencing their longer term incoming and retirement. 
 The Covid-19 pandemic had less impact because the flexibility of work for many occupations has become possible. 
 
 ○ Recommendations:
+
 Child Care affordable;
 Aged care qualified and safe;
 Review work pay;
@@ -84,6 +90,7 @@ Review work pay;
 ○ Outline any setbacks and make recommendations of any further data required or a new data model to be built (if required).
 The source of the data is rich and qualified, however, they had some changing over the years and the format of data is different depending of the year, the model of collecting, processing and delivery. From 2018 is standardised, becoming easy to correlate and making connections between tables.
 
-○ Next steps - What would you do next?
+● Next steps - What would you do next?
+
 Many articles suggested a larger gap during covid times, which could be possible if more time could be spending analising data. ABS and others statistic researches are still releasing data about Covid, with granulated data and more time, better results can be found. 
 
